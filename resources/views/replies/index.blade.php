@@ -24,6 +24,23 @@
         </div>
     @endunless
 
+    <form method="GET" action="{{ route('replies.index') }}" class="card shadow-sm card-body mb-3">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <input type="search" name="q" value="{{ $term }}" class="form-control flex-grow-1 w-auto"
+                   placeholder="Search name, email, subject or text…">
+            <div class="form-check mb-0">
+                <input type="checkbox" name="unread" value="1" id="unread" class="form-check-input" @checked($unread)>
+                <label for="unread" class="form-check-label text-nowrap">Unread only</label>
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+            @if ($term || $unread)
+                <a href="{{ route('replies.index') }}" class="btn btn-outline-secondary" title="Clear filters">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            @endif
+        </div>
+    </form>
+
     <div class="vstack gap-3">
         @forelse ($replies as $reply)
             @php($contact = $reply->contact)
@@ -38,7 +55,7 @@
                             {{ $reply->from_email }}{{ $contact->company ? ' · '.$contact->company : '' }}
                         </div>
                     </div>
-                    <span class="small text-body-secondary text-nowrap">{{ $reply->received_at?->format('d M Y, H:i') }}</span>
+                    <span class="small text-body-secondary text-nowrap">{{ $reply->received_at?->format('d M Y, h:i A') }}</span>
                 </div>
                 <div class="card-body">
                     @if ($reply->subject)
@@ -69,7 +86,11 @@
             <div class="card shadow-sm">
                 <div class="card-body text-center text-body-secondary py-5">
                     <i class="bi bi-inbox fs-2 d-block mb-2"></i>
-                    No replies yet. When someone answers one of your emails, it shows up here.
+                    @if ($term || $unread)
+                        No replies match these filters.
+                    @else
+                        No replies yet. When someone answers one of your emails, it shows up here.
+                    @endif
                 </div>
             </div>
         @endforelse

@@ -107,7 +107,7 @@
                         <div class="fw-semibold mb-2">{{ $draft->subject }}</div>
                         <div style="white-space: pre-line;">{{ $draft->body }}</div>
                         @if ($draft->sent_at)
-                            <div class="small text-body-secondary mt-3"><i class="bi bi-send-check me-1"></i> Sent {{ $draft->sent_at->format('d M Y, H:i') }}</div>
+                            <div class="small text-body-secondary mt-3"><i class="bi bi-send-check me-1"></i> Sent {{ $draft->sent_at->format('d M Y, h:i A') }}</div>
                         @endif
                     @endif
                 </div>
@@ -117,7 +117,7 @@
                 <div class="card shadow-sm border-success mt-3">
                     <div class="card-header bg-body d-flex justify-content-between">
                         <span class="fw-semibold"><i class="bi bi-reply-fill me-1 text-success"></i> Reply from {{ $reply->from_name ?: $reply->from_email }}</span>
-                        <span class="small text-body-secondary">{{ $reply->received_at?->format('d M Y, H:i') }}</span>
+                        <span class="small text-body-secondary">{{ $reply->received_at?->format('d M Y, h:i A') }}</span>
                     </div>
                     <div class="card-body" style="white-space: pre-line;">{{ $reply->newText() }}</div>
                 </div>

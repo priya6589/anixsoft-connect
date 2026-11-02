@@ -32,7 +32,7 @@
 
                     <div class="row text-center g-2 mb-3">
                         @foreach ([
-                            ['Not sorted yet', $stats['unclassified'], route('contacts.index')],
+                            ['Not sorted yet', $stats['unclassified'], route('contacts.index', ['category' => 'unsorted'])],
                             ['Qualified', $stats['qualified'], route('contacts.index', ['status' => 'qualified'])],
                             ['Drafts to review', $stats['drafts_pending'], route('drafts.index')],
                         ] as [$label, $value, $link])
@@ -96,7 +96,7 @@
                         <li class="list-group-item small">
                             <div class="d-flex justify-content-between">
                                 <span class="text-truncate me-2">{{ $import->original_filename }}</span>
-                                <span class="text-body-secondary text-nowrap">{{ $import->created_at->format('d M Y, H:i') }}</span>
+                                <span class="text-body-secondary text-nowrap">{{ $import->created_at->format('d M Y, h:i A') }}</span>
                             </div>
                             <span class="badge text-bg-success">{{ $import->created_count }} new</span>
                             <span class="badge text-bg-info">{{ $import->updated_count }} updated</span>

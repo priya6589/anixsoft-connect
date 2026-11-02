@@ -18,10 +18,15 @@ class EmailDraftController extends Controller
 {
     public function index(Request $request): View
     {
-        $status = $request->query('status', EmailDraft::STATUS_DRAFT);
+        $status = $this->filter($request, 'status', [...array_keys(EmailDraft::STATUSES), 'all']) ?? EmailDraft::STATUS_DRAFT;
+        $term = $this->searchTerm($request);
 
         $drafts = EmailDraft::with('contact')
             ->when($status !== 'all', fn ($q) => $q->where('status', $status))
+            // Matches the contact (name, company, position, email) or the email's subject.
+            ->when($term, fn ($q) => $q->where(fn ($q) => $q
+                ->whereHas('contact', fn ($q) => $q->search($term))
+                ->orWhere('subject', 'like', "%{$term}%")))
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -29,6 +34,7 @@ class EmailDraftController extends Controller
         return view('drafts.index', [
             'drafts' => $drafts,
             'status' => $status,
+            'term' => $term,
             'counts' => EmailDraft::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
         ]);
     }

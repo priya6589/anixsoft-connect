@@ -13,7 +13,7 @@
     <ul class="nav nav-pills mb-3 flex-wrap">
         @foreach (['draft' => 'Waiting for review', 'approved' => 'Approved', 'sent' => 'Sent', 'rejected' => 'Rejected', 'failed' => 'Failed', 'all' => 'All'] as $value => $label)
             <li class="nav-item">
-                <a class="nav-link @if ($status === $value) active @endif" href="{{ route('drafts.index', ['status' => $value]) }}">
+                <a class="nav-link @if ($status === $value) active @endif" href="{{ route('drafts.index', array_filter(['status' => $value, 'q' => $term])) }}">
                     {{ $label }}
                     @if ($value !== 'all')
                         <span class="badge text-bg-light border ms-1">{{ $counts[$value] ?? 0 }}</span>
@@ -24,6 +24,20 @@
     </ul>
 
     <div class="card shadow-sm">
+        <div class="card-body border-bottom">
+            <form method="GET" action="{{ route('drafts.index') }}" class="d-flex gap-2">
+                <input type="hidden" name="status" value="{{ $status }}">
+                <input type="search" name="q" value="{{ $term }}" class="form-control"
+                       placeholder="Search name, company, email or subject…">
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                @if ($term)
+                    <a href="{{ route('drafts.index', ['status' => $status]) }}" class="btn btn-outline-secondary" title="Clear search">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <div class="list-group list-group-flush">
             @forelse ($drafts as $draft)
                 <a href="{{ route('drafts.edit', $draft) }}" class="list-group-item list-group-item-action py-3">
@@ -40,7 +54,7 @@
             @empty
                 <div class="list-group-item text-center text-body-secondary py-5">
                     <i class="bi bi-envelope-paper fs-2 d-block mb-2"></i>
-                    No drafts here yet.
+                    {{ $term ? 'No drafts match this search.' : 'No drafts here yet.' }}
                 </div>
             @endforelse
         </div>

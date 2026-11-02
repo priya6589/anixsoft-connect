@@ -21,14 +21,14 @@
         <div class="card-body border-bottom">
             <form method="GET" action="{{ route('contacts.index') }}" class="row g-2">
                 <div class="col-md-4">
-                    <input type="search" name="q" value="{{ request('q') }}" class="form-control"
+                    <input type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control"
                            placeholder="Search name, company, position, email…">
                 </div>
                 <div class="col-6 col-md-2">
                     <select name="status" class="form-select">
                         <option value="">All statuses</option>
                         @foreach ($statuses as $value => [$label])
-                            <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected(($filters['status'] ?? null) === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -36,20 +36,26 @@
                     <select name="category" class="form-select">
                         <option value="">All categories</option>
                         @foreach ($categories as $value => $label)
-                            <option value="{{ $value }}" @selected(request('category') === $value)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected(($filters['category'] ?? null) === $value)>{{ $label }}</option>
                         @endforeach
+                        <option value="unsorted" @selected(($filters['category'] ?? null) === 'unsorted')>Not sorted</option>
                     </select>
                 </div>
                 <div class="col-6 col-md-2">
                     <select name="email" class="form-select">
                         <option value="">Any email</option>
-                        <option value="with" @selected(request('email') === 'with')>Has email</option>
-                        <option value="without" @selected(request('email') === 'without')>No email</option>
+                        <option value="with" @selected(($filters['email'] ?? null) === 'with')>Has email</option>
+                        <option value="without" @selected(($filters['email'] ?? null) === 'without')>No email</option>
+                        <optgroup label="Email lookup">
+                            @foreach ($emailStatuses as $value => [$label])
+                                <option value="{{ $value }}" @selected(($filters['email'] ?? null) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </optgroup>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-outline-primary flex-fill">Filter</button>
-                    @if (request()->hasAny(['q', 'status', 'category', 'email']))
+                    @if ($filters)
                         <a href="{{ route('contacts.index') }}" class="btn btn-outline-secondary" title="Clear filters">
                             <i class="bi bi-x-lg"></i>
                         </a>
@@ -118,7 +124,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="text-center text-body-secondary py-5">
-                                @if (request()->hasAny(['q', 'status', 'category', 'email']))
+                                @if ($filters)
                                     No contacts match these filters.
                                 @else
                                     No contacts yet. <a href="{{ route('contacts.import.form') }}">Import your LinkedIn CSV</a> to get started.

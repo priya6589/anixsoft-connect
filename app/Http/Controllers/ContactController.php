@@ -14,12 +14,19 @@ class ContactController extends Controller
 {
     public function index(Request $request): View
     {
+        $status = $this->filter($request, 'status', array_keys(Contact::STATUSES));
+        $category = $this->filter($request, 'category', [...array_keys(Contact::CATEGORIES), 'unsorted']);
+        // "with" / "without" an email, or an email lookup result such as "found" or "not_found".
+        $email = $this->filter($request, 'email', ['with', 'without', ...array_keys(Contact::EMAIL_STATUSES)]);
+
         $contacts = Contact::query()
-            ->search($request->query('q'))
-            ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
-            ->when($request->query('category'), fn ($q, $category) => $q->where('category', $category))
-            ->when($request->query('email') === 'with', fn ($q) => $q->whereNotNull('email'))
-            ->when($request->query('email') === 'without', fn ($q) => $q->whereNull('email'))
+            ->search($this->searchTerm($request))
+            ->when($status, fn ($q) => $q->where('status', $status))
+            ->when($category === 'unsorted', fn ($q) => $q->whereNull('classified_at'))
+            ->when($category && $category !== 'unsorted', fn ($q) => $q->where('category', $category))
+            ->when($email === 'with', fn ($q) => $q->whereNotNull('email'))
+            ->when($email === 'without', fn ($q) => $q->whereNull('email'))
+            ->when($email && isset(Contact::EMAIL_STATUSES[$email]), fn ($q) => $q->where('email_status', $email))
             ->latest('id')
             ->paginate(25)
             ->withQueryString();
@@ -29,6 +36,9 @@ class ContactController extends Controller
             'stats' => Contact::stats(),
             'statuses' => Contact::STATUSES,
             'categories' => Contact::CATEGORIES,
+            'emailStatuses' => Contact::EMAIL_STATUSES,
+            // Only the filters actually applied, so the form never echoes a malformed value.
+            'filters' => array_filter(['q' => $this->searchTerm($request), 'status' => $status, 'category' => $category, 'email' => $email]),
         ]);
     }
 

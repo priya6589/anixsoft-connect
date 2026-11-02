@@ -103,7 +103,8 @@ class ReplyInbox
             'from_name' => mb_substr((string) $mail['from_name'], 0, 255) ?: null,
             'subject' => mb_substr((string) $mail['subject'], 0, 255) ?: null,
             'body' => $mail['body'],
-            'received_at' => $mail['received_at'] ? Carbon::parse($mail['received_at']) : now(),
+            // Mail dates carry the sender's timezone: store them in the app's (IST).
+            'received_at' => $mail['received_at'] ? Carbon::parse($mail['received_at'])->setTimezone(config('app.timezone')) : now(),
         ]);
 
         $draft->contact->update(['status' => Contact::STATUS_REPLIED]);
