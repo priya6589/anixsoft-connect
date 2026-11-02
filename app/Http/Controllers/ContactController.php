@@ -17,23 +17,18 @@ class ContactController extends Controller
         $contacts = Contact::query()
             ->search($request->query('q'))
             ->when($request->query('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->query('category'), fn ($q, $category) => $q->where('category', $category))
             ->when($request->query('email') === 'with', fn ($q) => $q->whereNotNull('email'))
             ->when($request->query('email') === 'without', fn ($q) => $q->whereNull('email'))
             ->latest('id')
             ->paginate(25)
             ->withQueryString();
 
-        $stats = [
-            'total' => Contact::count(),
-            'with_email' => Contact::whereNotNull('email')->count(),
-            'without_email' => Contact::whereNull('email')->count(),
-            'imports' => ContactImport::count(),
-        ];
-
         return view('contacts.index', [
             'contacts' => $contacts,
-            'stats' => $stats,
+            'stats' => Contact::stats(),
             'statuses' => Contact::STATUSES,
+            'categories' => Contact::CATEGORIES,
         ]);
     }
 

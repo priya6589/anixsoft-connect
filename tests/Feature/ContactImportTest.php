@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Contact;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
@@ -10,6 +11,13 @@ use Tests\TestCase;
 class ContactImportTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
 
     private function linkedInCsv(array $rows): UploadedFile
     {
@@ -27,6 +35,7 @@ class ContactImportTest extends TestCase
 
     public function test_pages_render(): void
     {
+        $this->get('/')->assertOk()->assertSee('Upload LinkedIn contacts')->assertSee('Recently added contacts');
         $this->get(route('contacts.index'))->assertOk()->assertSee('No contacts yet');
         $this->get(route('contacts.import.form'))->assertOk()->assertSee('Import LinkedIn contacts');
     }

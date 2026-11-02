@@ -13,21 +13,10 @@
                         You can upload a newer export at any time: existing contacts are updated, not duplicated.
                     </p>
 
-                    <form method="POST" action="{{ route('contacts.import') }}" enctype="multipart/form-data">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="file" class="form-label fw-semibold">CSV file</label>
-                            <input type="file" name="file" id="file" accept=".csv,text/csv"
-                                   class="form-control @error('file') is-invalid @enderror" required>
-                            @error('file')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Max 10 MB.</div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-upload me-1"></i> Upload &amp; save contacts
-                        </button>
-                    </form>
+                    @include('contacts._upload-form')
+                    <a href="{{ asset('samples/sample-linkedin-connections.csv') }}" download class="d-inline-block small mt-3">
+                        <i class="bi bi-download me-1"></i> Download a sample file for testing
+                    </a>
                 </div>
             </div>
         </div>

@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Shared hosting: the domain points at this folder, not at public/.
+    # Never serve app code or secrets (.env, vendor, storage, ...) directly.
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|artisan|phpunit\.xml|package(-lock)?\.json) - [F,L,NC]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$) - [F,L,NC]
+
+    # Everything else is handled by public/ (its own .htaccess takes over from there).
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    DirectoryIndex index.php
+</IfModule>
