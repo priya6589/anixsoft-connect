@@ -88,6 +88,8 @@ class Contact extends Model
         'email_source_url',
         'email_checked_at',
         'company',
+        'website_url',
+        'website_tech',
         'position',
         'connected_on',
         'category',

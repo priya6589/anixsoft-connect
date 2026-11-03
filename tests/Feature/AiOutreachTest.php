@@ -48,9 +48,11 @@ class AiOutreachTest extends TestCase
             {
                 $this->draftCalls++;
 
+                $website = ['website_url' => 'https://acme.test', 'website_tech' => 'WordPress'];
+
                 return $previous
-                    ? ['subject' => "New angle after: {$previous->subject}", 'body' => "Hi {$contact->first_name}, a fresh version."]
-                    : ['subject' => "Hello {$contact->first_name}", 'body' => "Hi {$contact->first_name}, we are connected on LinkedIn."];
+                    ? ['subject' => "New angle after: {$previous->subject}", 'body' => 'A fresh version of the pitch.', 'website_url' => null, 'website_tech' => null]
+                    : ['subject' => "Hello {$contact->first_name}", 'body' => "Hi {$contact->first_name},\n\nWe are connected on LinkedIn.\n\nBest regards,\nSomeone"] + $website;
             }
         };
 
@@ -193,6 +195,34 @@ class AiOutreachTest extends TestCase
 
         // Nothing to write without an email address.
         $this->post(route('contacts.draft', $this->contact(['email' => null])))->assertForbidden();
+    }
+
+    public function test_every_email_gets_the_same_greeting_and_sign_off_around_the_ai_text(): void
+    {
+        $this->fakeAi();
+        config(['outreach.sender_name' => 'The Anixsoft Team', 'outreach.signature_extra' => 'www.anixsoft.net']);
+        $contact = $this->contact(['first_name' => 'Priya']);
+
+        $this->post(route('contacts.draft', $contact));
+        $first = $contact->emailDrafts()->sole();
+
+        // A greeting or sign-off the AI added anyway is replaced by the fixed ones.
+        $closing = "\n\nThanks & Regards,\nThe Anixsoft Team\nwww.anixsoft.net\n\nIf you'd rather not hear from us again, just reply and let us know.";
+        $this->assertSame("Dear Priya,\n\nWe are connected on LinkedIn.".$closing, $first->body);
+
+        // The website the AI looked at is saved and shown to the reviewer.
+        $this->assertSame('https://acme.test', $contact->fresh()->website_url);
+        $this->get(route('drafts.edit', $first))->assertSee('acme.test')->assertSee('WordPress');
+
+        // Regenerating changes only the middle, and a website found earlier is kept.
+        $this->post(route('contacts.draft', $contact));
+        $this->assertSame("Dear Priya,\n\nA fresh version of the pitch.".$closing, $contact->latestDraft()->first()->body);
+        $this->assertSame('WordPress', $contact->fresh()->website_tech);
+
+        // Company inboxes are greeted as the team.
+        $shared = $this->contact(['email_status' => 'company', 'company' => 'Tripathi Fashion House']);
+        $this->post(route('contacts.draft', $shared));
+        $this->assertStringStartsWith("Dear Tripathi Fashion House Team,\n\n", $shared->emailDrafts()->sole()->body);
     }
 
     public function test_approve_sends_text_on_screen_within_daily_limit(): void

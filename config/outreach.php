@@ -32,6 +32,18 @@ return [
 
     'services' => env('OUTREACH_SERVICES', 'custom web development (Laravel/PHP), web applications, mobile apps, and ongoing maintenance and support'),
 
+    // Optional line under the sign-off, e.g. "www.anixsoft.net | +91 98765 43210".
+    'signature_extra' => env('OUTREACH_SIGNATURE_EXTRA'),
+
+    // Every email is greeting + Claude's text + sign-off + opt-out line, so only the
+    // middle changes between emails and when regenerating. {first_name} and {company} are filled in.
+    'email' => [
+        'greeting' => 'Dear {first_name},',
+        'company_greeting' => 'Dear {company} Team,',
+        'sign_off' => 'Thanks & Regards,',
+        'opt_out' => "If you'd rather not hear from us again, just reply and let us know.",
+    ],
+
     // Emails drafted (and later sent) per day.
     'daily_limit' => (int) env('OUTREACH_DAILY_LIMIT', 10),
 

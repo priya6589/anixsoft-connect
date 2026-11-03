@@ -28,6 +28,15 @@
                     </div>
                     <div class="text-body-secondary mb-2">{{ $contact->position }}{{ $contact->company ? ' at '.$contact->company : '' }}</div>
                     <div class="mb-2"><i class="bi bi-envelope me-1"></i> {{ $contact->email }}</div>
+                    @if ($contact->website_url)
+                        <div class="mb-2 text-break">
+                            <i class="bi bi-globe me-1"></i>
+                            <a href="{{ $contact->website_url }}" target="_blank" rel="noopener noreferrer">{{ preg_replace('#^https?://(www\.)?#i', '', rtrim($contact->website_url, '/')) }}</a>
+                            @if ($contact->website_tech)
+                                <span class="badge text-bg-light border ms-1" title="What the AI saw the website is built with">{{ $contact->website_tech }}</span>
+                            @endif
+                        </div>
+                    @endif
                     <div class="mb-2">
                         <span class="badge text-bg-primary">{{ $contact->categoryLabel() }}</span>
                         <span class="badge text-bg-light border">Score {{ $contact->ai_score ?? '—' }}</span>
